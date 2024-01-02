@@ -193,6 +193,9 @@ app.UseAuthorization();
 //add endpoints here
 
 
+
+// tuberorders
+
 app.MapGet("/api/tuberorders", () =>
 {
     return tuberOrder.Select(t => new TuberOrderDTO
@@ -247,7 +250,79 @@ app.MapGet("/api/tuberorders/{id}", (int id) =>
 });
 
 
+app.MapPost("/api/tuberorders", (TuberOrder newOrder) =>
+{
+    newOrder.Id = tuberOrder.Max(o => o.Id) + 1;
+    newOrder.OrderPlacedOnDate = DateTime.Now;
+    tuberOrder.Add(newOrder);
 
+    return Results.Created($"/api/tuberorders/{newOrder.Id}", new TuberOrderDTO
+    {
+        Id = newOrder.Id,
+        OrderPlacedOnDate = newOrder.OrderPlacedOnDate,
+        CustomerId = newOrder.CustomerId,
+        TuberDriverId = newOrder.TuberDriverId,
+        DeliveredOnDate = newOrder.DeliveredOnDate
+    });
+});
+
+
+app.MapPut("/api/tuberorders/{id}", (int id, int driverId) =>
+{
+    var order = tuberOrder.FirstOrDefault(o => o.Id == id);
+
+    if (order == null)
+    {
+        return Results.NotFound();
+    }
+
+    var driver = tuberDriver.FirstOrDefault(d => d.Id == driverId);
+
+    if (driver == null)
+    {
+        return Results.NotFound("Driver not found");
+    }
+
+    order.TuberDriverId = driverId;
+
+    return Results.Ok(new TuberOrderDTO
+    {
+        Id = order.Id,
+        OrderPlacedOnDate = order.OrderPlacedOnDate,
+        CustomerId = order.CustomerId,
+        TuberDriverId = order.TuberDriverId,
+        DeliveredOnDate = order.DeliveredOnDate
+    });
+});
+
+
+
+app.MapPost("/api/tuberorders/{id}/complete", (int id) =>
+{
+    var order = tuberOrder.FirstOrDefault(o => o.Id == id);
+
+    if (order == null)
+    {
+        return Results.NotFound();
+    }
+
+    order.DeliveredOnDate = DateTime.Now;
+
+    return Results.Ok(new TuberOrderDTO
+    {
+        Id = order.Id,
+        OrderPlacedOnDate = order.OrderPlacedOnDate,
+        CustomerId = order.CustomerId,
+        TuberDriverId = order.TuberDriverId,
+        DeliveredOnDate = order.DeliveredOnDate
+    });
+});
+
+
+
+
+
+//toppings
 
 app.MapGet("/api/toppings", () =>
 {
@@ -307,6 +382,8 @@ app.MapDelete("/api/toppings/{id}", (int id) =>
 
 
 
+// tubertoppings
+
 app.MapGet("/api/tubertoppings", () =>
 {
     return tuberTopping.Select(t => new TuberToppingDTO
@@ -319,6 +396,10 @@ app.MapGet("/api/tubertoppings", () =>
 
 
 
+
+
+
+// customers
 
 app.MapGet("/api/customers", () =>
 {
@@ -387,6 +468,11 @@ app.MapDelete("/api/customers/{id}", (int id) =>
 });
 
 
+
+
+
+
+// tuberdrivers
 
 app.MapGet("/api/tuberdrivers", () =>
 {
