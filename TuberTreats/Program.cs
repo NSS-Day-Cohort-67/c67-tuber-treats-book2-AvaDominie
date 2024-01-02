@@ -250,10 +250,16 @@ app.MapGet("/api/tuberorders/{id}", (int id) =>
 });
 
 
-app.MapPost("/api/tuberorders", (TuberOrder newOrder) =>
+app.MapPost("/api/tuberorders", (string customerName, string address, int customerId, int tuberDriverId) =>
 {
-    newOrder.Id = tuberOrder.Max(o => o.Id) + 1;
-    newOrder.OrderPlacedOnDate = DateTime.Now;
+    var newOrder = new TuberOrder
+    {
+        Id = tuberOrder.Max(o => o.Id) + 1,
+        OrderPlacedOnDate = DateTime.Now,
+        CustomerId = customerId,
+        TuberDriverId = tuberDriverId
+    };
+
     tuberOrder.Add(newOrder);
 
     return Results.Created($"/api/tuberorders/{newOrder.Id}", new TuberOrderDTO
@@ -265,6 +271,7 @@ app.MapPost("/api/tuberorders", (TuberOrder newOrder) =>
         DeliveredOnDate = newOrder.DeliveredOnDate
     });
 });
+
 
 
 app.MapPut("/api/tuberorders/{id}", (int id, int driverId) =>
@@ -439,9 +446,14 @@ app.MapGet("/api/customers/{id}", (int id) =>
 });
 
 
-app.MapPost("/api/customers", (Customer newCustomer) =>
+app.MapPost("/api/customers", (string name, string address) =>
 {
-    newCustomer.Id = customer.Max(c => c.Id) + 1;
+    var newCustomer = new Customer
+    {
+        Id = customer.Max(c => c.Id) + 1,
+        Name = name,
+        Address = address
+    };
 
     customer.Add(newCustomer);
 
@@ -452,6 +464,7 @@ app.MapPost("/api/customers", (Customer newCustomer) =>
         Address = newCustomer.Address
     });
 });
+;
 
 app.MapDelete("/api/customers/{id}", (int id) =>
 {
