@@ -204,7 +204,7 @@ app.MapGet("/api/tuberorders", () =>
         OrderPlacedOnDate = t.OrderPlacedOnDate,
         CustomerId = t.CustomerId,
         TuberDriverId = t.TuberDriverId,
-        DeliveredOnDate = t.DeliveredOnDate
+        DeliveredOnDate = t.DeliveredOnDate,
     });
 });
 
@@ -358,32 +358,6 @@ app.MapGet("/api/toppings/{id}", (int id) =>
     });
 });
 
-app.MapPost("/api/toppings", (Topping newTopping) =>
-{
-    newTopping.Id = topping.Max(c => c.Id) + 1;
-
-    topping.Add(newTopping);
-
-    return Results.Created($"/api/toppings/{newTopping.Id}", new ToppingDTO
-    {
-        Id = newTopping.Id,
-        Name = newTopping.Name
-    });
-});
-
-app.MapDelete("/api/toppings/{id}", (int id) =>
-{
-    Topping byId = topping.FirstOrDefault(e => e.Id == id);
-
-    if (byId == null)
-    {
-        return Results.NotFound();
-    }
-
-    topping.Remove(byId);
-
-    return Results.Ok();
-});
 
 
 
@@ -402,7 +376,40 @@ app.MapGet("/api/tubertoppings", () =>
 });
 
 
+app.MapPost("/api/tubertoppings", (int TuberOrderId, int ToppingId) =>
+{
+    var newTuberTopping = new TuberTopping
+    {
+        Id = tuberTopping.Max(c => c.Id) + 1,
+        TuberOrderId = TuberOrderId,
+        ToppingId = ToppingId
+    };
 
+    tuberTopping.Add(newTuberTopping);
+
+    return Results.Created($"/api/tubertoppings/{newTuberTopping.Id}", new TuberToppingDTO
+    {
+        Id = newTuberTopping.Id,
+        TuberOrderId = newTuberTopping.TuberOrderId,
+        ToppingId = newTuberTopping.ToppingId
+    });
+});
+
+
+
+app.MapDelete("/api/tubertoppings/{id}", (int id) =>
+{
+    TuberTopping byId = tuberTopping.FirstOrDefault(e => e.Id == id);
+
+    if (byId == null)
+    {
+        return Results.NotFound();
+    }
+
+    tuberTopping.Remove(byId);
+
+    return Results.Ok();
+});
 
 
 
@@ -508,7 +515,6 @@ app.MapGet("/api/tuberdrivers/{id}", (int id) =>
 
 
     var driverOrders = tuberOrder.Where(o => o.TuberDriverId == id).ToList();
-
     return Results.Ok(new TuberDriverDTO
     {
         Id = driver.Id,
